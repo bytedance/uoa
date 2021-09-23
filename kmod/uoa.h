@@ -2,25 +2,17 @@
 #define BYTEDANCE_UOA
 
 
-#ifdef __KERNEL__
-#include <asm/byteorder.h>
-#else
-#include <endian.h>
-#include <netinet/in.h>
-#endif
 #include <linux/types.h>
-#include <linux/ip.h>
-#include <linux/ipv6.h>
 
 
 union two_addr{
     struct{
-        struct in_addr saddr;
-        struct in_addr daddr;
+        unsigned char saddr[4];
+        unsigned char daddr[4];
     }ipv4;
     struct{
-        struct in6_addr saddr;
-        struct in6_addr daddr;
+        unsigned char saddr[16];
+        unsigned char daddr[16];
     }ipv6;
 };
 
@@ -32,31 +24,54 @@ struct four_tuple{
 
 
 
-struct ip_option{
-    union{
-        struct{
-            __u8 type;
-            __u8 length;
-        }ipv4;
-        struct{
-            __u8 next_hdr;
-            __u8 len;
-        }ipv6;
-    }header;
-
-    __u8 operation;
-    __u8 padding;
-
-    __be16 sport, dport;
-    
-    union two_addr addrs;
+/* uoa socket options */
+enum {
+    UOA_SO_BASE          = 2048,
+    /* set */
+    UOA_SO_SET_MAX       = UOA_SO_BASE,
+    /* get */
+    UOA_SO_GET_LOOKUP    = UOA_SO_BASE,
+    UOA_SO_GET_LOOKUP1   = UOA_SO_GET_LOOKUP + 1,
+    UOA_SO_GET_MAX       = UOA_SO_GET_LOOKUP1,
 };
 
-#define IP_OPTION_IPV4_LEN  16
-#define IP_OPTION_IPV6_LEN  40
+union inet_addr {
+    struct in_addr      in;
+    struct in6_addr     in6;
+};
 
-#define IP_OPTION_IPV4_TYPE  31
-#define IP_OPTION_IPV6_NEXT_HDR 248
+// // param v0
+// struct uoa_param_map {
+//     /* input */
+//     __be16           af;
+//     union inet_addr  saddr;
+//     union inet_addr  daddr;
+//     __be16           sport;
+//     __be16           dport;
+//     /* output */
+//     // __be16           real_af;
+//     union inet_addr  real_saddr;
+//     __be16           real_sport;
+// } __attribute__((__packed__));
+
+
+struct uoa_param_map {
+	/* input */
+	__be32	saddr;
+	__be32	daddr;
+	__be16	sport;
+	__be16	dport;
+	/* output */
+	__be32	real_saddr;
+	__be16	real_sport;
+} __attribute__((__packed__));
+
+
+// param v1
+union uoa_sockopt_param{
+    struct four_tuple input;
+    struct four_tuple output;
+};
 
 
 #endif
