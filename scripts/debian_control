@@ -1,0 +1,9 @@
+Package: uoa-dkms
+Version: 2.2.1
+Architecture: amd64
+License: GPL
+Maintainer: zhangianyu.sys@bytedance.com
+Installed-Size: 50
+Section: default
+Priority: extra
+Description: uoa module for ttgw
